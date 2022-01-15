@@ -1,14 +1,13 @@
-// server.js
-// where your node app starts
-
-// init project
 require('dotenv').config();
-var express = require('express');
-var app = express();
+const express = require('express');
+const app = express();
+const dns = require('dns');
+
+const port = process.env.PORT || 3000
 
 // enable CORS (https://en.wikipedia.org/wiki/Cross-origin_resource_sharing)
 // so that your API is remotely testable by FCC 
-var cors = require('cors');
+const cors = require('cors');
 app.use(cors({optionsSuccessStatus: 200}));  // some legacy browsers choke on 204
 
 // http://expressjs.com/en/starter/static-files.html
@@ -19,15 +18,27 @@ app.get("/", function (req, res) {
   res.sendFile(__dirname + '/views/index.html');
 });
 
+// api whoami
+app.get("/api/whoami", function (req, res) {
 
-// your first API endpoint... 
-app.get("/api/hello", function (req, res) {
-  res.json({greeting: 'hello API'});
+  // req.headers -> devuelve datos de cabecera de la peticion
+  // console.log(req.headers.host) // nombre del servidor
+
+  // dns.lookup para obtener ip del host actual
+  dns.lookup( req.headers.host , (err, addresses) => {
+    //console.log('ip addresses: %j', addresses)
+
+    // creamos la respuesta
+    res.json({
+      ipaddress: addresses,
+      language: req.headers['accept-language'],
+      software: req.headers['user-agent'],
+    });
+  });
+  
 });
 
-
-
 // listen for requests :)
-var listener = app.listen(process.env.PORT, function () {
+const listener = app.listen(port, function () {
   console.log('Your app is listening on port ' + listener.address().port);
 });
